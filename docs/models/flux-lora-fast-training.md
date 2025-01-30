@@ -5,40 +5,109 @@ Model ID: `fal-ai/flux-lora-fast-training`
 ## Description
 Fine-tuning endpoint optimized for fast LoRA training. Can be used for both subject-specific and style LoRA training.
 
-## Purpose
-Used for training custom LoRA models for users, supporting both:
-- Subject-specific LoRAs (with auto-captioning and segmentation)
-- Style LoRAs (without auto-captioning and segmentation)
+## Installation
 
-## Input Parameters
+```bash
+# Using pnpm (recommended)
+pnpm add @fal-ai/client
+
+# Using npm
+npm install --save @fal-ai/client
+```
+
+Note: The `@fal-ai/serverless-client` package has been deprecated in favor of `@fal-ai/client`.
+
+## Authentication
+
+Set up your FAL AI key in one of two ways:
+
+1. Environment variable (recommended):
+```bash
+export FAL_KEY="YOUR_API_KEY"
+```
+
+2. Client configuration:
+```typescript
+import { fal } from "@fal-ai/client";
+
+fal.config({
+  credentials: "YOUR_FAL_KEY"
+});
+```
+
+⚠️ **Security Note**: Never expose your FAL_KEY in client-side code. Use a server-side proxy for browser applications.
+
+## Methods
+
+### Direct Subscribe
+```typescript
+const result = await fal.subscribe("fal-ai/flux-lora-fast-training", {
+  input: {
+    images_data_url: "your_zip_url",
+    steps: 1000,
+    trigger_word: "TOK"
+  },
+  logs: true,
+  onQueueUpdate: (update) => {
+    if (update.status === "IN_PROGRESS") {
+      update.logs.map((log) => log.message).forEach(console.log);
+    }
+  },
+});
+```
+
+### Queue Operations
+
+For long-running training jobs:
+
+1. Submit request:
+```typescript
+const { request_id } = await fal.queue.submit("fal-ai/flux-lora-fast-training", {
+  input: {
+    images_data_url: "your_zip_url"
+  },
+  webhookUrl: "https://your-webhook.com/callback"
+});
+```
+
+2. Check status:
+```typescript
+const status = await fal.queue.status("fal-ai/flux-lora-fast-training", {
+  requestId: request_id,
+  logs: true
+});
+```
+
+3. Get result:
+```typescript
+const result = await fal.queue.result("fal-ai/flux-lora-fast-training", {
+  requestId: request_id
+});
+```
+
+## Input Schema
 
 ### Required Parameters
 - `images_data_url` (string): URL to zip archive with training images
-  - Recommended: At least 4 images, more is better
-  - Can include caption files with same name as images (e.g., `photo.jpg` and `photo.txt`)
+  - Minimum 4 images recommended
+  - Can include caption files with matching names (e.g., `photo.jpg` and `photo.txt`)
 
 ### Optional Parameters
 - `trigger_word` (string): Trigger word for captions
-  - If no captions provided, used as caption
-  - Ignored if captions are provided
+  - Used as caption if no captions provided
   - Required for style training
-- `steps` (integer): Training steps
-  - Default: 1000
-  - Min: 1
-  - Max: 10000
-- `create_masks` (boolean): Use segmentation masks in training
-  - Default: true
+- `steps` (integer, default: 1000): Training steps
+  - Range: 1-10000
+- `create_masks` (boolean, default: true): Use segmentation masks
   - Uses face masking for people when possible
-- `is_style` (boolean): Style training mode
-  - Default: false
+- `is_style` (boolean, default: false): Style training mode
   - When true, disables segmentation and auto-captioning
-- `is_input_format_already_preprocessed` (boolean): Input format flag
-  - Default: false
-  - Set true if data is already preprocessed
-- `data_archive_format` (string): Archive format specification
-  - Optional, inferred from URL if not provided
+- `is_input_format_already_preprocessed` (boolean, default: false)
+  - Set true if data is preprocessed
+- `data_archive_format` (string, optional)
+  - Inferred from URL if not provided
 
-## Response Structure
+## Response Schema
 
 ```typescript
 interface TrainingResponse {
@@ -51,8 +120,8 @@ interface TrainingResponse {
   config_file: {
     url: string;          // URL to configuration
     file_name: string;    // e.g., "config.json"
-    file_size: number;    // Size in bytes
-    content_type: string; // e.g., "application/octet-stream"
+    file_size: number;
+    content_type: string;
   };
   debug_preprocessed_output?: {
     url: string;
@@ -63,47 +132,50 @@ interface TrainingResponse {
 }
 ```
 
-## API Usage Example
+## File Handling
 
+### Base64 Data URI
+You can pass images as Base64 data URIs:
 ```typescript
-const result = await fal.subscribe("fal-ai/flux-lora-fast-training", {
-  input: {
-    steps: 1000,
-    is_style: false,
-    create_masks: true,
-    trigger_word: "TOK",
-    images_data_url: "https://example.com/training_images.zip"
-  },
-  logs: true,
-  onQueueUpdate: (update) => {
-    console.log('Training status:', update.status);
-  },
+const base64Image = "data:image/jpeg;base64,/9j/4AAQ...";
+```
+
+### URL Upload
+For files hosted online:
+```typescript
+const imageUrl = "https://example.com/image.jpg";
+```
+
+### File Upload
+Using FAL storage:
+```typescript
+const file = new File([imageData], "training.zip", { 
+  type: "application/zip" 
 });
+const url = await fal.storage.upload(file);
 ```
 
 ## Best Practices
 
 1. Image Preparation:
-   - Use at least 4 high-quality images
-   - For subjects: use clear, well-lit photos with consistent focus
-   - For styles: use images that clearly represent the style
+   - Use 4+ high-quality images
+   - For subjects: clear, well-lit photos
+   - For styles: representative style samples
 
 2. Training Configuration:
-   - For subjects:
-     - Keep `create_masks` enabled
+   - Subjects:
+     - Keep `create_masks: true`
      - Use descriptive trigger words
-     - Let auto-captioning handle descriptions
-   - For styles:
-     - Set `is_style` to true
-     - Disable masks
+   - Styles:
+     - Set `is_style: true`
      - Choose distinctive trigger word
 
 3. Steps Configuration:
    - Start with 1000 steps
-   - Increase for more complex styles
+   - Increase for complex styles
    - Decrease for simple subjects
 
 4. Data Organization:
-   - Use consistent image sizes
-   - Include caption files when needed
-   - Organize images by quality/relevance
+   - Consistent image sizes
+   - Clear file naming
+   - Include captions when needed
