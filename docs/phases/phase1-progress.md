@@ -20,32 +20,56 @@
 - [x] PostgreSQL database created
 - [x] Database connection configured
 - [x] Initial migrations completed
-- [ ] Bot setup (in progress)
+- [x] Bot setup
   - [x] Environment configured
   - [x] TypeScript configuration
-  - [ ] Fix TypeScript errors in:
-    - Bot command handlers (stars, gen)
-    - Generation service
-    - Server request types
-  - [ ] Test bot commands
+  - [x] Fixed TypeScript errors
+  - [x] Server running on port 3001
+  - [ ] Image generation needs fixes
+  - [ ] Payment prices need adjustment
+
+## Current Issues
+
+1. Image Generation (FAL Integration):
+   ```json
+   {"level":50,"error":{},"msg":"Generation failed"}
+   ```
+   - Generation completes successfully (status: "COMPLETED")
+   - Response processing fails
+   - Need to implement proper error handling
+   - Need to validate FAL API response structure
+
+2. Payment Configuration:
+   - Current pricing: 99 XTR for 5 stars (incorrect)
+   - Should be: 5 XTR for 5 stars (1:1 ratio)
+   - Need to update pricing in stars.ts:
+     ```typescript
+     const starPacks = [
+       { stars: 5, price: 5, label: '5 ⭐' },
+       { stars: 10, price: 10, label: '10 ⭐' },
+       { stars: 20, price: 20, label: '20 ⭐' },
+       { stars: 50, price: 50, label: '50 ⭐' }
+     ];
+     ```
 
 ## Next Steps
 
-1. Fix TypeScript Errors:
-- Command context and bot types
-- FAL client initialization
-- Database schema mismatch in generation service
-- Request type validation
+1. Fix Image Generation:
+   - Add proper error handling for FAL API responses
+   - Implement response structure validation
+   - Add retry logic for failed generations
+   - Improve error logging
 
-2. Test Bot Commands:
-- /start command
-- /stars command with payments
-- /gen command with FAL integration
+2. Fix Payment System:
+   - Update star pack prices to match 1:1 XTR ratio
+   - Test payment flow with new prices
+   - Verify star balance updates
+   - Test error scenarios
 
-3. Configure Services:
-- Set up FAL service for image generation
-- Test image generation flow
-- Configure storage for generated images
+3. Testing Required:
+   - /start command - working
+   - /stars command with new prices
+   - /gen command with improved error handling
 
 ## Environment Setup
 
@@ -63,16 +87,16 @@ FAL_KEY=              # Set
 FAL_KEY_SECRET=       # Optional
 
 # Server
-PORT=3000
+PORT=3001
 NODE_ENV=production
 LOG_LEVEL=info
 ```
 
-## Issues to Address
-1. Fix TypeScript errors in bot commands
-2. Complete generation service implementation
-3. Add proper request/response types
-4. Test entire flow:
-   - User balance
-   - Star purchases
-   - Image generation
+## Today's Changes (January 30, 2025)
+1. [x] Fixed CORS issues with server
+2. [x] Added proper TypeScript types for Prisma
+3. [x] Changed server port to 3001
+4. [x] Fixed currency to use XTR
+5. [x] Bot successfully starting and connecting
+6. [ ] Pending: Update star prices
+7. [ ] Pending: Fix image generation error handling
