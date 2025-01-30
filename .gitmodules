@@ -1,0 +1,9 @@
+[submodule "selfi-bot-v2"]
+    path = selfi-bot-v2
+    url = https://github.com/luc-io/selfi-bot-v2.git
+    branch = main
+
+[submodule "selfi-miniapp-v2"]
+    path = selfi-miniapp-v2
+    url = https://github.com/luc-io/selfi-miniapp-v2.git
+    branch = main
