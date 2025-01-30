@@ -8,53 +8,59 @@
 - Miniapp submodule at `selfi-miniapp-v2`
 
 2. Database Setup:
-- PostgreSQL installed
-- Database: selfi_bot
-- User: selfibot
-- Password configured
+- [x] PostgreSQL installed
+- [x] Database: selfi_bot
+- [x] User: selfibot
+- [x] Password configured
+- [x] Database connection fixed
 
 3. Current Tasks:
 - [x] Project structure setup
 - [x] Dependencies installed
 - [x] PostgreSQL database created
-- [ ] Database connection (in progress)
-- [ ] Initial migrations
-- [ ] Bot setup
+- [x] Database connection configured
+- [x] Initial migrations completed
+- [ ] Bot setup (in progress)
+  - [x] Environment configured
+  - [x] TypeScript configuration
+  - [ ] Fix TypeScript errors in:
+    - Bot command handlers (stars, gen)
+    - Generation service
+    - Server request types
+  - [ ] Test bot commands
 
 ## Next Steps
 
-1. Fix Database Connection:
-```bash
-# Update the database URL in selfi-bot-v2/.env
-DATABASE_URL="postgres://selfibot:\/_LI7M9=|6v@127.0.0.1:5432/selfi_bot?schema=public"
-```
+1. Fix TypeScript Errors:
+- Command context and bot types
+- FAL client initialization
+- Database schema mismatch in generation service
+- Request type validation
 
-2. Run Migrations:
-```bash
-cd selfi-bot-v2
-pnpm prisma generate
-pnpm prisma db push
-```
+2. Test Bot Commands:
+- /start command
+- /stars command with payments
+- /gen command with FAL integration
 
-3. Configure Bot:
-- Get Telegram bot token
-- Configure environment variables
-- Test basic commands
+3. Configure Services:
+- Set up FAL service for image generation
+- Test image generation flow
+- Configure storage for generated images
 
 ## Environment Setup
 
-Current .env configuration needed:
+Current .env configuration:
 ```env
 # Bot Configuration
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_PAYMENT_TOKEN=
+TELEGRAM_BOT_TOKEN=     # Set
+TELEGRAM_PAYMENT_TOKEN= # Optional
 
 # Database
-DATABASE_URL="postgres://selfibot:\/_LI7M9=|6v@127.0.0.1:5432/selfi_bot?schema=public"
+DATABASE_URL=postgresql://selfibot:selfibot123@127.0.0.1:5432/selfi_bot?schema=public
 
 # FAL
-FAL_KEY=
-FAL_KEY_SECRET=
+FAL_KEY=              # Set
+FAL_KEY_SECRET=       # Optional
 
 # Server
 PORT=3000
@@ -63,7 +69,10 @@ LOG_LEVEL=info
 ```
 
 ## Issues to Address
-1. Database connection string format
-2. Bot token configuration
-3. FAL AI integration
-4. Storage setup (pending)
+1. Fix TypeScript errors in bot commands
+2. Complete generation service implementation
+3. Add proper request/response types
+4. Test entire flow:
+   - User balance
+   - Star purchases
+   - Image generation
